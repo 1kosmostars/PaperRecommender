@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Recommender — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #7c3aed;
+  --sidebar: #0f172a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 200px; flex-shrink: 0;
+  background: var(--sidebar);
+  color: #cbd5e1;
+  display: flex; flex-direction: column;
+  padding: 1.5rem 0;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+.sidebar-logo {
+  font-size: 1rem; font-weight: 700; color: white;
+  padding: 0 1.2rem 1.5rem;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 0.75rem;
+}
+.nav-btn {
+  display: block; width: 100%;
+  padding: 0.65rem 1.2rem;
+  text-align: left; font-size: 0.88rem;
+  background: none; border: none; cursor: pointer;
+  color: #94a3b8;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background: #1e293b; color: #e2e8f0; }
+.nav-btn.active { background: #1e3a8a; color: white; border-left-color: var(--primary); }
+.sidebar-spacer { flex: 1; }
+.sidebar-link {
+  display: block; padding: 0.65rem 1.2rem;
+  font-size: 0.82rem; color: #64748b; text-decoration: none;
+}
+.sidebar-link:hover { color: #94a3b8; }
+
+/* ── Main ── */
+.main { margin-left: 200px; flex: 1; padding: 2rem; }
+.tab { display: none; }
+.tab.active { display: block; }
+.tab-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text); }
+
+/* ── Stat Cards ── */
+.cards-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card {
+  background: var(--card); border-radius: 12px; padding: 1.2rem;
+  border: 1px solid var(--border); text-align: center;
+}
+.stat-card .val { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 0.3rem; }
+.stat-card .val.green  { color: var(--green); }
+.stat-card .val.red    { color: var(--red); }
+.stat-card .val.yellow { color: var(--yellow); }
+.stat-card .val.purple { color: var(--purple); }
+.stat-card .lbl { font-size: 0.78rem; color: var(--muted); }
+
+/* ── Charts Grid ── */
+.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+.charts-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+.chart-box {
+  background: var(--card); border-radius: 12px; padding: 1.2rem;
+  border: 1px solid var(--border);
+}
+.chart-box h3 { font-size: 0.9rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.chart-box.full { margin-bottom: 1.2rem; }
+
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; margin-top: 0.5rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+
+/* ── Buttons ── */
+.btn { padding: 0.45rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.88rem; transition: background 0.15s; }
+.btn:hover { background: var(--primary-dark); }
+.btn.danger { background: var(--red); }
+.btn.danger:hover { background: #b91c1c; }
+.btn.sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+.btn-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+
+/* ── Form controls ── */
+input[type=text], input[type=number] {
+  padding: 0.4rem 0.7rem; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 0.88rem; outline: none;
+}
+input:focus { border-color: var(--primary); }
+input[type=number] { width: 80px; }
+label { font-size: 0.82rem; color: var(--muted); }
+
+/* ── Sections ── */
+.section { background: var(--card); border-radius: 12px; padding: 1.3rem; margin-bottom: 1.2rem; border: 1px solid var(--border); }
+.section h2 { font-size: 0.92rem; font-weight: 600; color: var(--primary); margin-bottom: 1rem; }
+
+/* ── Output / pre ── */
+pre {
+  background: #0f172a; color: #94a3b8; border-radius: 8px;
+  padding: 1rem; font-size: 0.78rem; max-height: 320px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-all; margin-top: 0.75rem;
+}
+pre.ok  { color: #6ee7b7; }
+pre.err { color: #fca5a5; }
+
+/* ── Signal badges ── */
+.sig { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; margin-right: 3px; background: #f1f5f9; color: var(--muted); }
+.sig-hnsw     { background: #dbeafe; color: #1d4ed8; }
+.sig-bpr      { background: #fce7f3; color: #be185d; }
+.sig-bm25     { background: #fef3c7; color: #92400e; }
+.sig-pagerank { background: #d1fae5; color: #065f46; }
+.sig-view     { background: #f1f5f9; color: #64748b; }
+.sig-click    { background: #dbeafe; color: #1d4ed8; }
+.sig-save     { background: #d1fae5; color: #065f46; }
+.sig-cite     { background: #ede9fe; color: #5b21b6; }
+.sig-download { background: #fef3c7; color: #92400e; }
+
+/* ── Misc ── */
+.text-muted { color: var(--muted); font-size: 0.82rem; }
+.text-green { color: var(--green); font-weight: 600; }
+.text-red   { color: var(--red);   font-weight: 600; }
+.mt { margin-top: 1rem; }
+.loading { color: var(--muted); font-size: 0.88rem; padding: 1rem 0; }
+.score-bar-wrap { display: inline-block; width: 80px; background: #e2e8f0; border-radius: 3px; height: 6px; vertical-align: middle; margin-left: 6px; }
+.score-bar { height: 6px; background: var(--primary); border-radius: 3px; }
+
+/* ── Modal ── */
+#modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); z-index: 200;
+  align-items: center; justify-content: center;
+}
+#modal-overlay.open { display: flex; }
+#modal {
+  background: var(--card); border-radius: 14px;
+  width: min(90vw, 760px); max-height: 85vh;
+  overflow-y: auto; padding: 1.8rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+#modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.2rem; }
+#modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); margin-top: -4px; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">⚙️ Admin Panel</div>
+  <button class="nav-btn active" data-tab="dashboard">📊 Dashboard</button>
+  <button class="nav-btn" data-tab="users">👥 Users</button>
+  <button class="nav-btn" data-tab="papers">📄 Papers</button>
+  <button class="nav-btn" data-tab="ops">🔧 Operations</button>
+  <button class="nav-btn" data-tab="diag">🔍 Diagnostics</button>
+  <div class="sidebar-spacer"></div>
+  <a class="sidebar-link" href="/">← Main App</a>
+</nav>
+
+<!-- ── Main Content ── -->
+<div class="main">
+
+  <!-- ════ DASHBOARD ════ -->
+  <section id="tab-dashboard" class="tab active">
+    <h1 class="tab-title">Dashboard</h1>
+    <div class="cards-row" id="dash-cards">
+      <div class="loading">Loading…</div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-box">
+        <h3>Papers by Year</h3>
+        <canvas id="yearChart" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Embedding Coverage</h3>
+        <canvas id="embChart" height="200"></canvas>
+      </div>
+    </div>
+    <div class="chart-box full">
+      <h3>Top 10 Topics</h3>
+      <canvas id="topicChart" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- ════ USERS ════ -->
+  <section id="tab-users" class="tab">
+    <h1 class="tab-title">Users</h1>
+    <div class="btn-row">
+      <button class="btn" onclick="loadUsers()">🔄 Refresh</button>
+    </div>
+    <div class="section" id="users-section">
+      <div class="loading">Loading users…</div>
+    </div>
+  </section>
+
+  <!-- ════ PAPERS ════ -->
+  <section id="tab-papers" class="tab">
+    <h1 class="tab-title">Papers &amp; Index</h1>
+    <div class="charts-row" id="papers-charts-row">
+      <div class="chart-box">
+        <h3>Papers by Year</h3>
+        <canvas id="yearChart2" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Embedding Coverage</h3>
+        <canvas id="embChart2" height="200"></canvas>
+      </div>
+    </div>
+    <div class="chart-box full">
+      <h3>Top 15 Topics</h3>
+      <canvas id="topicChart2" height="130"></canvas>
+    </div>
+    <div class="section">
+      <h2>Top 10 Papers by PageRank</h2>
+      <div id="pr-table"><div class="loading">Loading…</div></div>
+    </div>
+    <div class="section">
+      <h2>Index Configuration</h2>
+      <div id="index-config"><div class="loading">Loading…</div></div>
+    </div>
+  </section>
+
+  <!-- ════ OPERATIONS ════ -->
+  <section id="tab-ops" class="tab">
+    <h1 class="tab-title">Operations</h1>
+
+    <div class="section">
+      <h2>Rebuild Indexes (HNSW · BM25 · BPR · PageRank)</h2>
+      <div class="btn-row">
+        <button class="btn" onclick="apiCall('POST','/api/admin/reindex')">Reindex Now</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Deep-Ingest All Papers — fix topics &amp; citations</h2>
+      <div class="btn-row">
+        <label>maxRefs per paper</label>
+        <input type="number" id="maxRefs" value="20" min="0" max="200">
+        <label>delay ms</label>
+        <input type="number" id="delayMs" value="400" min="0" max="5000">
+        <button class="btn" onclick="deepIngestAll()">Run deep-ingest-all</button>
+      </div>
+      <p class="text-muted">Re-fetches full paper data (topics, abstracts, embeddings) and saves citation edges for all S2 papers.</p>
+    </div>
+
+    <div class="section">
+      <h2>Ingest Papers from Semantic Scholar</h2>
+      <div class="btn-row">
+        <input type="text" id="s2Query" placeholder="e.g. attention transformer" value="attention transformer" style="width:260px">
+        <label>limit</label>
+        <input type="number" id="s2Limit" value="20" min="1" max="100">
+        <button class="btn" onclick="ingestS2()">Ingest</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Deep-Ingest Single Paper by S2 ID</h2>
+      <div class="btn-row">
+        <input type="text" id="s2PaperId" placeholder="S2 paperId (40-char hex)" style="width:340px">
+        <label>maxRefs</label>
+        <input type="number" id="s2SingleRefs" value="30" min="0" max="500">
+        <button class="btn" onclick="ingestSingle()">Ingest</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Output</h2>
+      <pre id="ops-out">—</pre>
+    </div>
+  </section>
+
+  <!-- ════ DIAGNOSTICS ════ -->
+  <section id="tab-diag" class="tab">
+    <h1 class="tab-title">Diagnostics</h1>
+
+    <div class="section">
+      <h2>Index Stats (quick)</h2>
+      <div class="btn-row">
+        <button class="btn" onclick="diagCall('GET','/api/admin/stats')">Fetch Stats</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>BM25 Debug Search</h2>
+      <div class="btn-row">
+        <input type="text" id="debugQuery" placeholder="e.g. attention is all you need" style="width:340px">
+        <input type="number" id="debugK" value="10" min="1" max="100">
+        <button class="btn" onclick="searchDebug()">Search</button>
+      </div>
+      <p class="text-muted">Bypasses MMR/fusion — shows raw BM25 hits (paper indexes).</p>
+    </div>
+
+    <div class="section">
+      <h2>Recommendation Signal Explainer</h2>
+      <div class="btn-row">
+        <label>userId (optional)</label>
+        <input type="text" id="explainUserId" placeholder="UUID or blank" style="width:290px">
+      </div>
+      <div class="btn-row">
+        <label>query (optional)</label>
+        <input type="text" id="explainQuery" placeholder="text query for BM25 signal" style="width:290px">
+        <label>k</label>
+        <input type="number" id="explainK" value="10" min="1" max="50">
+        <button class="btn" onclick="runExplain()">▶ Explain</button>
+      </div>
+      <div id="explain-signals" style="margin:0.75rem 0; font-size:0.85rem;"></div>
+      <div id="explain-table"></div>
+    </div>
+
+    <div class="section">
+      <h2>Raw Output</h2>
+      <pre id="diag-out">—</pre>
+    </div>
+  </section>
+</div>
+
+<!-- ── User Detail Modal ── -->
+<div id="modal-overlay">
+  <div id="modal">
+    <button id="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-title"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── Chart instances ─────────────────────────────────────────────────────────
+const charts = {};
+
+function mkChart(id, type, data, options = {}) {
+  if (charts[id]) { charts[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, { type, data, options: { responsive: true, ...options } });
+}
+
+const PALETTE = ['#2563eb','#10b981','#f59e0b','#ef4444','#7c3aed','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48','#8b5cf6','#0ea5e9','#a3e635'];
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+const tabLoaded = {};
+document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const id = btn.dataset.tab;
+    document.getElementById('tab-' + id).classList.add('active');
+    if (!tabLoaded[id]) { tabLoaded[id] = true; loadTab(id); }
+  });
+});
+
+function loadTab(id) {
+  if (id === 'users')  loadUsers();
+  if (id === 'papers') loadPapers();
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const [idx, stats] = await Promise.all([
+    apiFetch('/api/admin/index-detail'),
+    apiFetch('/api/admin/paper-stats')
+  ]);
+
+  // Stat cards
+  const cards = [
+    { val: idx.papersInDb,      lbl: 'Papers in DB',    cls: '' },
+    { val: idx.papersInIndex,   lbl: 'In Index',         cls: '' },
+    { val: idx.embeddingCount,  lbl: 'Embeddings',       cls: 'green' },
+    { val: idx.userCount,       lbl: 'Users',            cls: 'purple' },
+    { val: idx.bm25Docs,        lbl: 'BM25 Docs',        cls: '' },
+    { val: idx.bprTrained ? '✓' : '✗', lbl: 'BPR Trained', cls: idx.bprTrained ? 'green' : 'red' },
+  ];
+  document.getElementById('dash-cards').innerHTML = cards.map(c =>
+    `<div class="stat-card"><div class="val ${c.cls}">${c.val}</div><div class="lbl">${c.lbl}</div></div>`
+  ).join('');
+
+  // Papers by Year chart
+  const years  = Object.keys(stats.byYear).map(Number);
+  const counts = Object.values(stats.byYear).map(Number);
+  mkChart('yearChart', 'bar', {
+    labels: years,
+    datasets: [{ label: 'Papers', data: counts, backgroundColor: '#2563eb', borderRadius: 4 }]
+  }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+
+  // Embedding coverage
+  mkChart('embChart', 'doughnut', {
+    labels: ['With Embedding', 'Without Embedding'],
+    datasets: [{ data: [stats.withEmbedding, stats.withoutEmbedding], backgroundColor: ['#10b981','#e2e8f0'] }]
+  }, { plugins: { legend: { position: 'bottom' } } });
+
+  // Top 10 Topics
+  const topTopics = Object.entries(stats.byTopic).slice(0, 10);
+  mkChart('topicChart', 'bar', {
+    labels: topTopics.map(([k]) => k),
+    datasets: [{ label: 'Papers', data: topTopics.map(([,v]) => v), backgroundColor: PALETTE }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  });
+}
+
+// ── Users ────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  const sec = document.getElementById('users-section');
+  sec.innerHTML = '<div class="loading">Loading…</div>';
+  const users = await apiFetch('/api/admin/users-overview');
+  if (!users || !users.length) { sec.innerHTML = '<p class="text-muted">No users yet.</p>'; return; }
+
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>Name</th><th>Registered</th><th>Total</th>
+      <th>VIEW</th><th>CLICK</th><th>SAVE</th><th>CITE</th><th></th>
+    </tr></thead><tbody>`;
+  users.forEach(u => {
+    const ac = u.actionCounts || {};
+    html += `<tr>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td class="text-muted">${fmtDate(u.createdAt)}</td>
+      <td><strong>${u.totalInteractions}</strong></td>
+      <td>${ac.VIEW||0}</td><td>${ac.CLICK||0}</td><td>${ac.SAVE||0}</td><td>${ac.CITE||0}</td>
+      <td><button class="btn sm" onclick="showUserDetail('${u.id}','${esc(u.name)}')">Detail</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  sec.innerHTML = html;
+}
+
+async function showUserDetail(userId, userName) {
+  const data = await apiFetch(`/api/admin/user-detail/${userId}`);
+  if (!data) return;
+
+  const ac = data.actionCounts || {};
+  const actionLabels  = Object.keys(ac);
+  const actionCounts  = Object.values(ac);
+  const colors = { VIEW:'#cbd5e1', CLICK:'#93c5fd', SAVE:'#6ee7b7', CITE:'#c4b5fd', DOWNLOAD:'#fde68a' };
+
+  let html = `<div class="modal-grid">
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">ACTION DISTRIBUTION</h3>
+      <canvas id="modal-pie" height="200"></canvas>
+    </div>
+    <div>
+      <h3 style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">SUMMARY</h3>
+      <table style="font-size:0.88rem">`;
+  actionLabels.forEach(k => {
+    html += `<tr><td style="padding:0.3rem 0.5rem 0.3rem 0">${k}</td><td style="padding:0.3rem 0.5rem"><strong>${ac[k]}</strong></td></tr>`;
+  });
+  html += `</table>
+      <p style="margin-top:0.75rem;font-size:0.82rem;color:var(--muted)">Registered: ${fmtDate(data.user.createdAt)}</p>
+    </div>
+  </div>
+  <h3 style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">RECENT INTERACTIONS (latest first)</h3>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Paper</th><th>Action</th><th>Weight</th><th>When</th></tr></thead>
+    <tbody>`;
+  (data.interactions || []).slice(0, 30).forEach(i => {
+    const badge = `<span class="sig sig-${i.actionType.toLowerCase()}">${i.actionType}</span>`;
+    html += `<tr>
+      <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(i.paperTitle)}">${esc(i.paperTitle)}</td>
+      <td>${badge}</td>
+      <td class="text-muted">${i.weight.toFixed(1)}</td>
+      <td class="text-muted">${fmtDate(i.createdAt)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+
+  document.getElementById('modal-title').textContent = `User: ${userName}`;
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+
+  setTimeout(() => {
+    mkChart('modal-pie', 'doughnut', {
+      labels: actionLabels,
+      datasets: [{ data: actionCounts, backgroundColor: actionLabels.map(l => colors[l] || '#e2e8f0') }]
+    }, { plugins: { legend: { position: 'bottom' } } });
+  }, 50);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+// ── Papers ───────────────────────────────────────────────────────────────────
+let papersData = null;
+async function loadPapers() {
+  const [stats, idx] = await Promise.all([
+    apiFetch('/api/admin/paper-stats'),
+    apiFetch('/api/admin/index-detail')
+  ]);
+  papersData = stats;
+
+  // Year chart
+  const years  = Object.keys(stats.byYear).map(Number);
+  const yCounts = Object.values(stats.byYear).map(Number);
+  mkChart('yearChart2', 'bar', {
+    labels: years,
+    datasets: [{ label: 'Papers', data: yCounts, backgroundColor: '#2563eb', borderRadius: 4 }]
+  }, { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } });
+
+  // Embedding coverage (papers tab)
+  mkChart('embChart2', 'doughnut', {
+    labels: ['With Embedding', 'Without Embedding'],
+    datasets: [{ data: [stats.withEmbedding, stats.withoutEmbedding], backgroundColor: ['#10b981','#e2e8f0'] }]
+  }, { plugins: { legend: { position: 'bottom' } } });
+
+  // Top 15 topics
+  const topics = Object.entries(stats.byTopic).slice(0, 15);
+  mkChart('topicChart2', 'bar', {
+    labels: topics.map(([k]) => k),
+    datasets: [{ label: 'Papers', data: topics.map(([,v]) => v), backgroundColor: PALETTE }]
+  }, {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  });
+
+  // Top PageRank table
+  const maxPR = Math.max(...(stats.topByPageRank || []).map(p => p.pageRankScore), 0.001);
+  let prHtml = `<div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Title</th><th>Year</th><th>PageRank</th><th>Citations (S2)</th></tr></thead>
+    <tbody>`;
+  (stats.topByPageRank || []).forEach((p, i) => {
+    const barW = Math.round((p.pageRankScore / maxPR) * 80);
+    prHtml += `<tr>
+      <td class="text-muted">${i+1}</td>
+      <td style="max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(p.title)}">${esc(p.title)}</td>
+      <td class="text-muted">${p.year || '—'}</td>
+      <td>
+        <span style="font-variant-numeric:tabular-nums">${p.pageRankScore.toFixed(6)}</span>
+        <span class="score-bar-wrap"><span class="score-bar" style="width:${barW}px"></span></span>
+      </td>
+      <td class="text-muted">${p.citationCount.toLocaleString()}</td>
+    </tr>`;
+  });
+  prHtml += '</tbody></table></div>';
+  document.getElementById('pr-table').innerHTML = prHtml;
+
+  // Index config
+  const cfgRows = [
+    ['HNSW',      `dim=${idx.embeddingDim}, M=${idx.hnswM}, efConstruction=${idx.hnswEfConstruction}, efSearch=${idx.hnswEfSearch}`],
+    ['BPR',       `factors=${idx.bprFactors}, epochs=${idx.bprEpochs}, lr=${idx.bprLr}, λ=${idx.bprLambda}, trained=${idx.bprTrained}`],
+    ['BM25',      `docs=${idx.bm25Docs}`],
+    ['PageRank',  `damping=${idx.pageRankDamping}, iterations=${idx.pageRankIterations}`],
+    ['Fusion',    `candidateFactor=${idx.candidateFactor}, MMR λ=${idx.mmrLambda}, mmrRerankFactor=${idx.mmrRerankFactor}`],
+    ['DB / Index',`papersInDb=${idx.papersInDb}, papersInIndex=${idx.papersInIndex}, embeddings=${idx.embeddingCount}, users=${idx.userCount}`],
+  ];
+  let cfgHtml = `<table style="font-size:0.85rem">`;
+  cfgRows.forEach(([k, v]) => {
+    cfgHtml += `<tr>
+      <td style="font-weight:600;padding:0.4rem 1.2rem 0.4rem 0;color:var(--primary);white-space:nowrap">${k}</td>
+      <td style="padding:0.4rem 0;color:var(--muted)">${v}</td>
+    </tr>`;
+  });
+  cfgHtml += '</table>';
+  document.getElementById('index-config').innerHTML = cfgHtml;
+}
+
+// ── Operations ───────────────────────────────────────────────────────────────
+async function apiCall(method, url, params) {
+  const fullUrl = params ? url + '?' + new URLSearchParams(params) : url;
+  const out = document.getElementById('ops-out');
+  out.className = ''; out.textContent = 'Loading…';
+  try {
+    const res  = await fetch(fullUrl, { method });
+    const data = await res.json();
+    out.className = res.ok ? 'ok' : 'err';
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch (e) { out.className = 'err'; out.textContent = e.message; }
+}
+
+function deepIngestAll() {
+  apiCall('POST', '/api/admin/deep-ingest-all', {
+    maxRefs: document.getElementById('maxRefs').value,
+    delayMs: document.getElementById('delayMs').value
+  });
+}
+function ingestS2() {
+  const q = document.getElementById('s2Query').value.trim(); if (!q) return;
+  apiCall('POST', '/api/ingest/s2', { query: q, limit: document.getElementById('s2Limit').value });
+}
+function ingestSingle() {
+  const id = document.getElementById('s2PaperId').value.trim(); if (!id) return;
+  apiCall('POST', `/api/ingest/s2/${encodeURIComponent(id)}`, { maxRefs: document.getElementById('s2SingleRefs').value });
+}
+
+// ── Diagnostics ──────────────────────────────────────────────────────────────
+async function diagCall(method, url, params) {
+  const fullUrl = params ? url + '?' + new URLSearchParams(params) : url;
+  const out = document.getElementById('diag-out');
+  out.className = ''; out.textContent = 'Loading…';
+  try {
+    const res  = await fetch(fullUrl, { method });
+    const data = await res.json();
+    out.className = res.ok ? 'ok' : 'err';
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch (e) { out.className = 'err'; out.textContent = e.message; }
+}
+
+function searchDebug() {
+  const q = document.getElementById('debugQuery').value.trim(); if (!q) return;
+  diagCall('GET', '/api/admin/search-debug', { q, k: document.getElementById('debugK').value });
+}
+
+async function runExplain() {
+  const userId = document.getElementById('explainUserId').value.trim();
+  const q      = document.getElementById('explainQuery').value.trim();
+  const k      = document.getElementById('explainK').value;
+  const params = { k };
+  if (userId) params.userId = userId;
+  if (q)      params.q = q;
+
+  document.getElementById('explain-signals').textContent = 'Loading…';
+  document.getElementById('explain-table').innerHTML = '';
+  document.getElementById('diag-out').textContent = '—';
+
+  const data = await apiFetch('/api/admin/recommend-explain?' + new URLSearchParams(params));
+  if (!data) return;
+
+  // Active signals header
+  const sigMap = {
+    HNSW: { active: data.hnswActive, cls: 'hnsw' },
+    BPR:  { active: data.bprActive,  cls: 'bpr'  },
+    BM25: { active: data.bm25Active, cls: 'bm25' },
+    PageRank: { active: data.pageRankActive, cls: 'pagerank' }
+  };
+  const sigHtml = Object.entries(sigMap).map(([k, v]) =>
+    `<span class="sig sig-${v.cls}" style="opacity:${v.active?1:0.35}">${k}: ${v.active?'✓ active':'—'}</span>`
+  ).join(' ');
+  document.getElementById('explain-signals').innerHTML = 'Active signals: ' + sigHtml;
+
+  // Results table
+  const maxPR = Math.max(...(data.papers||[]).map(p => p.pageRankScore), 0.0001);
+  let html = `<div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Title</th><th>Year</th><th>Signals</th><th>RRF Score</th><th>PageRank</th><th>Citations</th></tr></thead>
+    <tbody>`;
+  (data.papers || []).forEach(p => {
+    const sigs = (p.signals||[]).map(s => `<span class="sig sig-${s.replace(' ','').toLowerCase()}">${s}</span>`).join(' ');
+    const barW = Math.round((p.pageRankScore / maxPR) * 60);
+    html += `<tr>
+      <td class="text-muted">${p.rank}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(p.title)}">${esc(p.title)}</td>
+      <td class="text-muted">${p.year||'—'}</td>
+      <td>${sigs}</td>
+      <td style="font-variant-numeric:tabular-nums">${p.rrfScore.toFixed(4)}</td>
+      <td>
+        ${p.pageRankScore.toFixed(6)}
+        <span class="score-bar-wrap"><span class="score-bar" style="width:${barW}px"></span></span>
+      </td>
+      <td class="text-muted">${p.citationCount.toLocaleString()}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('explain-table').innerHTML = html;
+  document.getElementById('diag-out').className = 'ok';
+  document.getElementById('diag-out').textContent = JSON.stringify(data, null, 2);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+async function apiFetch(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.statusText);
+    return await res.json();
+  } catch (e) {
+    console.error('apiFetch failed:', url, e);
+    return null;
+  }
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  tabLoaded['dashboard'] = true;
+  loadDashboard();
+});
+</script>
+</body>
+</html>

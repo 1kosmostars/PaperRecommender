@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>body{background:#fff;display:flex;justify-content:center;padding:20px;}</style>
+</head><body>
+<pre class="mermaid">
+graph TD
+    subgraph Presentation Layer
+        RC[RecommendController]
+        IC[IngestController]
+        AC[AdminController]
+        PC[PaperController]
+    end
+
+    subgraph Business Logic Layer
+        RS[RecommendationService]
+        IS[IndexService]
+        InS[IngestService]
+        PS[PaperService]
+    end
+
+    subgraph Algorithm Layer
+        BM[Bm25Index]
+        FR[FusionReranker]
+        MMR[MmrReranker]
+    end
+
+    subgraph Native Layer - C/JNI
+        HNSW[HNSW - C]
+        BPR[BPR - C]
+        PR[PageRank - C]
+    end
+
+    subgraph Data Access Layer
+        PaperRepo[PaperRepository]
+        UserRepo[UserRepository]
+        InterRepo[InteractionRepository]
+    end
+
+    subgraph PostgreSQL - Neon
+        papers[(papers)]
+        users[(users)]
+        interactions[(interactions)]
+    end
+
+    RC --> RS
+    RS --> IS
+    RS --> FR
+    RS --> MMR
+    IS --> BM
+    IS --> HNSW
+    IS --> BPR
+    IS --> PR
+    IS --> PaperRepo
+    PaperRepo --> papers
+    UserRepo --> users
+    InterRepo --> interactions
+    IC --> InS
+    InS --> PaperRepo
+</pre>
+<script>mermaid.initialize({startOnLoad:true});</script>
+</body></html>

@@ -1,0 +1,47 @@
+### Reindex all in-memory indexes
+POST http://localhost:8080/api/admin/reindex
+
+###
+
+### Deep-ingest all papers: re-fetch topics + save citation edges
+POST http://localhost:8080/api/admin/deep-ingest-all?maxRefs=20&delayMs=400
+
+###
+
+### Ingest papers from Semantic Scholar
+POST http://localhost:8080/api/ingest/s2?query=attention+transformer&limit=20
+
+###
+
+### Deep-ingest single paper by S2 id (replace the id)
+POST http://localhost:8080/api/ingest/s2/204e3073870fae3d05bcbc2f6a8e263d9b72e776?maxRefs=30
+
+###
+
+### Cold-start recommendations (no user)
+GET http://localhost:8080/api/recommend?k=15
+
+###
+
+### Recommendations with text query
+GET http://localhost:8080/api/recommend?q=BERT+language+model&k=15
+
+###
+
+### Recommendations for a specific user
+GET http://localhost:8080/api/recommend?userId=REPLACE_WITH_UUID&k=15
+
+###
+
+### List all papers
+GET http://localhost:8080/api/papers
+
+###
+
+### Create user
+POST http://localhost:8080/api/users
+кеContent-Type: application/json
+
+{ "name": "test" }
+
+###

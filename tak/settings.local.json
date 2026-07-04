@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\ikomostars\\\\IdeaProjects\\\\PaperRecommender\\\\native\\\\bm25\" && mkdir -p \"C:\\\\Users\\\\ikomostars\\\\IdeaProjects\\\\PaperRecommender\\\\src\\\\main\\\\java\\\\com\\\\recommender\\\\jni\")",
+      "Bash(cmake --version 2>&1 && gcc --version 2>&1 | head -1)",
+      "Bash(cmd.exe /c \"cmake --version 2>&1 & gcc --version 2>&1\")",
+      "Bash(cmd.exe /c \"where cmake & where gcc & where cl & where mingw32-make\")",
+      "Bash(wsl cmake:*)",
+      "Bash(mvn test:*)",
+      "Bash(cmd /c \"mvn test -q 2>&1\")",
+      "Bash(cmd /c \"cd C:\\\\\\\\Users\\\\\\\\ikomostars\\\\\\\\IdeaProjects\\\\\\\\PaperRecommender && mvn test 2>&1\")",
+      "Bash(where mvn:*)",
+      "Bash(cmd //c \"where mvn 2>&1\")",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(mvn spring-boot:run *)",
+      "Bash(java -version)",
+      "Bash('/c/Users/ikomostars/AppData/Local/Programs/IntelliJ IDEA Ultimate 2025.3.4/plugins/maven/lib/maven3/bin/mvn' compile -f /c/Users/ikomostars/IdeaProjects/PaperRecommender/pom.xml)",
+      "Bash('/c/Users/ikomostars/AppData/Local/Programs/IntelliJ IDEA Ultimate 2025.3.4/plugins/maven/lib/maven3/bin/mvn' spring-boot:run -f /c/Users/ikomostars/IdeaProjects/PaperRecommender/pom.xml)",
+      "Bash(gcc --version)",
+      "Bash(cmake .. -G 'MinGW Makefiles' -DCMAKE_C_COMPILER=/c/Users/ikomostars/scoop/apps/gcc/current/bin/gcc.exe -DJAVA_HOME=/c/Users/ikomostars/.jdks/openjdk-25)",
+      "Bash(cmake .. -G Ninja -DCMAKE_C_COMPILER=/c/msys64/ucrt64/bin/gcc.exe -DCMAKE_MAKE_PROGRAM=/c/msys64/ucrt64/bin/ninja.exe -DJAVA_HOME=/c/Users/ikomostars/.jdks/openjdk-25)",
+      "Bash(xargs wc *)",
+      "Read(//mnt/c/Users/ikomostars/IdeaProjects/**)",
+      "Bash(rm src/main/java/com/recommender/algorithm/cf/AlsModel.java src/test/java/com/recommender/algorithm/AlsModelTest.java src/main/java/com/recommender/algorithm/topic/LdaModel.java src/test/java/com/recommender/algorithm/LdaModelTest.java src/main/java/com/recommender/jni/BM25Native.java src/main/java/com/recommender/algorithm/cf/BprModel.java src/test/java/com/recommender/algorithm/BprModelTest.java src/main/java/com/recommender/algorithm/pagerank/PageRankCalculator.java src/test/java/com/recommender/algorithm/PageRankTest.java src/main/java/com/recommender/algorithm/hnsw/HnswIndex.java src/test/java/com/recommender/algorithm/HnswIndexTest.java)"
+    ]
+  }
+}

@@ -113,10 +113,11 @@ void bpr_fit(BprModel* m,
 
             /* SGD update */
             for (int f = 0; f < F; f++) {
+                float wu   = uf[f];            /* pre-update user factor */
                 float diff = vp[f] - vn[f];
-                uf[f] += lr * (grad * diff   - reg * uf[f]);
-                vp[f] += lr * (grad * uf[f]  - reg * vp[f]);
-                vn[f] += lr * (-grad * uf[f] - reg * vn[f]);
+                uf[f] += lr * (grad * diff - reg * wu);
+                vp[f] += lr * (grad * wu   - reg * vp[f]);
+                vn[f] += lr * (-grad * wu  - reg * vn[f]);
             }
         }
     }

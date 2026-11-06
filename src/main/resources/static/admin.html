@@ -439,7 +439,7 @@ async function loadUsers() {
       <td class="text-muted">${fmtDate(u.createdAt)}</td>
       <td><strong>${u.totalInteractions}</strong></td>
       <td>${ac.VIEW||0}</td><td>${ac.CLICK||0}</td><td>${ac.SAVE||0}</td><td>${ac.CITE||0}</td>
-      <td><button class="btn sm" onclick="showUserDetail('${u.id}','${esc(u.name)}')">Detail</button></td>
+      <td><button class="btn sm" data-id="${esc(u.id)}" data-name="${esc(u.name)}" onclick="showUserDetail(this.dataset.id, this.dataset.name)">Detail</button></td>
     </tr>`;
   });
   html += '</tbody></table></div>';
@@ -693,7 +693,7 @@ async function apiFetch(url) {
 
 function esc(str) {
   return String(str ?? '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function fmtDate(iso) {

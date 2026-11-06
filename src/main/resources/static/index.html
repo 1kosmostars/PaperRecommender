@@ -320,7 +320,7 @@ async function onLogin() {
 
 function showUserStatus(name, id) {
   document.getElementById('userStatus').innerHTML =
-    `Signed in as <strong>${name}</strong> <span style="color:#94a3b8;font-size:0.75rem">${id.slice(0,8)}…</span>`;
+    `Signed in as <strong>${esc(name)}</strong> <span style="color:#94a3b8;font-size:0.75rem">${esc(id.slice(0,8))}…</span>`;
   document.getElementById('nameInput').value = name;
   document.getElementById('activityToggle').style.display = 'inline';
 }
@@ -413,7 +413,7 @@ function makeCard(p, signals, rrfScore) {
                 onclick="interact('${p.id}','CITE',this)">
           ${isCited ? '✓ In my refs' : '📎 Add to refs'}
         </button>
-        ${p.arxivId ? `<a class="btn-action" href="https://arxiv.org/abs/${p.arxivId}" target="_blank">arXiv ↗</a>` : ''}
+        ${p.arxivId ? `<a class="btn-action" href="https://arxiv.org/abs/${esc(p.arxivId)}" target="_blank" rel="noopener noreferrer">arXiv ↗</a>` : ''}
       </div>
     </div>
     ${signals.length > 0 ? `
@@ -541,7 +541,7 @@ function clearGrid() {
 function esc(str) {
   return String(str ?? '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 let toastTimer;
 function toast(msg) {

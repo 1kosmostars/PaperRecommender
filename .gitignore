@@ -28,3 +28,11 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Build output ###
+target/
+native/build/
+
+### Local secrets / tool settings ###
+config/
+tak/

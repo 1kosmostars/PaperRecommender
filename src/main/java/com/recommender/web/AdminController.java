@@ -115,6 +115,7 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> searchDebug(
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int k) {
+        k = Math.max(1, Math.min(k, 100));
         List<String> tokens = Tokenizer.tokenize(q);
         List<Integer> hits  = indexService.searchBm25(tokens, k);
         return ResponseEntity.ok(Map.of(

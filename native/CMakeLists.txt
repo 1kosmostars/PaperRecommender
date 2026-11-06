@@ -13,16 +13,6 @@ else()
     add_compile_options(-Wall -O3 -ffast-math)
 endif()
 
-# ── BM25 ──────────────────────────────────────────────────────────────────────
-add_library(bm25 SHARED
-    bm25/bm25.c
-    bm25/bm25_jni.c
-)
-target_include_directories(bm25 PRIVATE bm25/)
-if (NOT MSVC)
-    target_link_libraries(bm25 m)
-endif()
-
 # ── HNSW ──────────────────────────────────────────────────────────────────────
 add_library(hnsw SHARED
     hnsw/hnsw.c
@@ -55,7 +45,7 @@ endif()
 # ── Copy all libs to resources/native/ after build ────────────────────────────
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/../src/main/resources/native")
 
-foreach(LIB bm25 hnsw pagerank bpr)
+foreach(LIB hnsw pagerank bpr)
     add_custom_command(TARGET ${LIB} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${RESOURCES_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy

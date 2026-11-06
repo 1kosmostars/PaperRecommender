@@ -136,7 +136,7 @@ static void search_layer(
         int ep, int ef, int layer,
         HnswHeap *W,        /* out: max-heap, ef nearest */
         HnswHeap *cands,    /* scratch: min-heap, reused across calls */
-        char     *visited,)  /* scratch: bool array of size idx->size */
+        char     *visited)  /* scratch: bool array of size idx->size */
 {
 
     heap_clear(W);
@@ -155,7 +155,7 @@ static void search_layer(
         exploring = (c.dist <= furthest);
         if (exploring) {
             const HnswNode *cn = &idx->nodes[c.id];
-            if (layer > cn->level) ;    /* this node doesn't exist here */
+            if (layer > cn->level) continue;    /* this node doesn't exist here */
             const HnswNeighbors *nb = &cn->layers[layer];
 
             for (int k = 0; k < nb->size; k++) {

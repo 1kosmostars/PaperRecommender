@@ -36,14 +36,14 @@ class RerankTest {
     }
 
     @Test
-    void linearCombineRespectsWeights() {
-        // Doc 0 has high score in map1 (weight 0.9), low in map2 (weight 0.1)
-        // Doc 1 has low in map1, high in map2
-        Map<Long, Double> map1 = Map.of(0L, 1.0, 1L, 0.0);
-        Map<Long, Double> map2 = Map.of(0L, 0.0, 1L, 1.0);
-
-        List<Long> result = FusionReranker.linearCombine(new double[]{0.9, 0.1}, map1, map2);
-        assertEquals(0L, result.get(0), "doc with high score in weighted signal should rank first");
+    void rrfRewardsAppearingInMoreLists() {
+        // Doc 2 is #2 in both lists: 2/(60+2) ≈ 0.0323 > 1/(60+1) ≈ 0.0164 for docs 1 and 3
+        List<List<Long>> rankings = List.of(
+                List.of(1L, 2L),
+                List.of(3L, 2L)
+        );
+        List<Long> fused = FusionReranker.reciprocalRankFusion(rankings);
+        assertEquals(2L, fused.get(0), "consensus across lists should beat a single first place");
     }
 
     // ── MmrReranker ───────────────────────────────────────────────────────────
